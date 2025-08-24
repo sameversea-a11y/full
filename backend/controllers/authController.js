@@ -101,6 +101,22 @@ class AuthController {
     try {
       const { verificationId, otp } = req.body;
 
+      console.log('Verification request received:', { verificationId, otp, body: req.body });
+
+      if (!verificationId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Verification ID is required'
+        });
+      }
+
+      if (!otp) {
+        return res.status(400).json({
+          success: false,
+          message: 'OTP is required'
+        });
+      }
+
       // Verify OTP
       const result = await authService.verifyOtp(verificationId, otp);
 

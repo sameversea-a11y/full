@@ -64,3 +64,4 @@ exports.handleUploadError = (error, req, res, next) => {
 };
 
 exports.uploadDocument = upload.single('document');
+exports.uploadMultipleFiles = upload.array('files', 30); // Support up to 30 files

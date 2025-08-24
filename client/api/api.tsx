@@ -108,12 +108,21 @@ export async function verifyPhoneOtp(phone: string, otp: string) {
 /**
  * Create new account
  */
-export async function createAccount(formData: SignupForm) {
+export async function createAccount(userData: {
+  name: string;
+  email: string;
+  mobile: string;
+  address?: {
+    street?: string;
+    state?: string;
+    pinCode?: string;
+  };
+}) {
   try {
-    const response = await axiosInstance.post("/api/auth/register", formData);
+    const response = await axiosInstance.post("/api/auth/register", userData);
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to create account");
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to create account");
   }
 }
 

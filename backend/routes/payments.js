@@ -26,7 +26,7 @@ router.post(
 
 // (Optional) legacy single-document order
 router.post(
-  '/payments/order/document',
+  '/order/document',
   protect,
   userOnly,
   [
@@ -59,7 +59,7 @@ router.post(
 );
 
 // Payment history (user)
-router.get('/payments/history', protect, userOnly, paymentController.getPaymentHistory);
+router.get('/history', protect, userOnly, paymentController.getPaymentHistory);
 
 // (Optional) backoffice list
 // router.get('/payments', protect, adminOnly, paymentController.getAllPayments);

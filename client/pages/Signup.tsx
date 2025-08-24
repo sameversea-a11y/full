@@ -328,7 +328,7 @@ export default function Signup() {
 
     try {
       // Create account and send OTP in one step
-      const accountData = await createAccount({
+      const response = await createAccount({
         name: formData.firstName + " " + formData.lastName,
         email: formData.email,
         mobile: formData.phone,
@@ -339,11 +339,11 @@ export default function Signup() {
         }
       });
 
-      setVerificationId(accountData.verificationId || accountData.userId);
+      setVerificationId(response.data.verificationId);
       setShowModal(true);
       Swal.fire("Account Created!", "OTP sent to your email address for verification", "success");
     } catch (error) {
-      Swal.fire("Error", "Failed to create account. Please try again.", "error");
+      Swal.fire("Error", error.message || "Failed to create account. Please try again.", "error");
     }
   };
 

@@ -291,32 +291,28 @@ export default function Signup() {
       return;
     }
 
-    try {
-      // User is already created and logged in after email verification
-      // Just store additional form data and proceed
-      const completeUserData = {
-        ...formData,
-        ...verifiedUser,
-        address: {
-          street: formData.address,
-          state: formData.state,
-          pinCode: formData.pin
-        }
-      };
+    // User is already created and logged in after email verification
+    // Just store additional form data and proceed
+    const completeUserData = {
+      ...formData,
+      ...verifiedUser,
+      address: {
+        street: formData.address,
+        state: formData.state,
+        pinCode: formData.pin
+      }
+    };
 
-      localStorage.setItem("udin_user_data", JSON.stringify(completeUserData));
+    localStorage.setItem("udin_user_data", JSON.stringify(completeUserData));
 
-      Swal.fire(
-        "Account Ready!",
-        "Your account is verified and ready to use. Proceeding to upload documents.",
-        "success"
-      );
+    Swal.fire(
+      "Account Ready!",
+      "Your account is verified and ready to use. You can now upload documents.",
+      "success"
+    );
 
-      // Redirect to upload screen (where they can upload files before payment)
-      navigate("/");
-    } catch (error) {
-      Swal.fire("Error", "Failed to complete account setup. Please try again.", "error");
-    }
+    // Redirect to upload screen (where they can upload files before payment)
+    navigate("/");
   };
 
   const handleEmailOtp = async () => {

@@ -39,7 +39,7 @@ router.post(
 
 // Verify payment (accepts either new or razorpay_* keys)
 router.post(
-  '/payments/verify',
+  '/verify',
   protect,
   userOnly,
   [

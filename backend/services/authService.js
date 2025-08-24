@@ -44,22 +44,32 @@ class AuthService {
       isEmailVerified: true, // Email verification will be needed
     });
 
-    // Generate email verification token
-    const emailToken = crypto.randomBytes(32).toString('hex');
-    user.emailVerificationToken = emailToken;
-    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-    await user.save();
+    // Generate unique verification ID for OTP
+    const verificationId = crypto.randomBytes(16).toString('hex');
 
-    // Send welcome email with verification link and temporary login password
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${emailToken}`;
-  /*   await sendEmail({
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+    // Set expiration time for OTP (e.g., 15 minutes)
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    // Save OTP and associated email in EmailVerification model
+    await EmailVerification.create({
+      email,
+      otp,
+      verificationId,
+      expiresAt,
+    });
+
+    // Send OTP to email instead of verification link
+    /* await sendEmail({
       to: email,
       subject: 'Welcome to UDIN - Verify Your Email',
       html: `
         <h2>Welcome to UDIN!</h2>
         <p>Hello ${name},</p>
-        <p>Thank you for registering with UDIN. Please verify your email address by clicking the link below:</p>
-        <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
+        <p>Thank you for registering with UDIN. Please verify your email address using this OTP:</p>
+        <p><strong>OTP: ${otp}</strong></p>
         <p>Your temporary login password is: <strong>${tempPassword}</strong></p>
         <p>This password can only be used once. After your first login, please reset your password using the "Forgot Password" feature.</p>
         <p>If you didn't create this account, please ignore this email.</p>
@@ -71,6 +81,8 @@ class AuthService {
       email: user.email,
       mobile: user.mobile,
       isEmailVerified: user.isEmailVerified,
+      verificationId, // Return verification ID for OTP verification
+      tempPassword // Return temp password for frontend display
     };
   }
 

@@ -52,7 +52,7 @@ axiosInstance.interceptors.response.use(
 );
 
 /**
- * Send OTP to email
+ * Send OTP to email (for new users)
  */
 export async function sendEmailOtp(email: string) {
   try {
@@ -60,6 +60,18 @@ export async function sendEmailOtp(email: string) {
     return response.data;
   } catch (error) {
     throw new Error("Failed to send email OTP");
+  }
+}
+
+/**
+ * Resend OTP to email (for existing unverified users)
+ */
+export async function resendEmailOtp(email: string) {
+  try {
+    const response = await axiosInstance.post("/api/auth/resend-otp", { email });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to resend email OTP");
   }
 }
 

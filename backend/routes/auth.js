@@ -26,12 +26,19 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Password is required')
 ], authController.login);
 
-// @desc    Send OTP for email verification
+// @desc    Send OTP for email verification (new users only)
 // @route   POST /api/auth/send-otp
 // @access  Public
 router.post('/send-otp', [
   body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email')
 ], authController.sendOtp);
+
+// @desc    Resend OTP for email verification (existing unverified users)
+// @route   POST /api/auth/resend-otp
+// @access  Public
+router.post('/resend-otp', [
+  body('email').isEmail().normalizeEmail().withMessage('Please enter a valid email')
+], authController.resendOtp);
 
 // @desc    Verify email using OTP
 // @route   POST /api/auth/verify-email

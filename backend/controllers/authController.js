@@ -136,11 +136,43 @@ class AuthController {
     }
   }
 
+  // Resend OTP for existing unverified users
+  async resendOtp(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array()
+        });
+      }
+
+      const { email } = req.body;
+
+      // Resend OTP for existing user
+      const result = await authService.resendOtp(email);
+
+      res.status(200).json({
+        success: true,
+        message: 'OTP has been resent to your email.',
+        data: { verificationId: result.verificationId, email: result.email }
+      });
+
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to resend OTP'
+      });
+    }
+  }
+
   // Get current user profile
   async getProfile(req, res) {
     try {
       const userData = await authService.getUserProfile(req.user.id);
-      
+
       res.status(200).json({
         success: true,
         data: userData

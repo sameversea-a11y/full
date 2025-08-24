@@ -18,11 +18,12 @@ import { UserPlus, ArrowLeft, Mail, Shield, Clock, RefreshCw } from "lucide-reac
 // API calls
 import {
   sendEmailOtp,
+  resendEmailOtp,
   createAccount,
   verifyEmailOtp,
 } from "@/api/api";
 
-const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) => {
+const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVerificationIdUpdate }) => {
   const [otp, setOtp] = useState(Array(6).fill("")); 
   const [timer, setTimer] = useState(120); 
   const [canResend, setCanResend] = useState(false); 
@@ -83,12 +84,14 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) =>
   const handleResendOtp = async () => {
     setIsResending(true);
     try {
-      await sendEmailOtp(email); 
-      setTimer(120); 
-      setCanResend(false); 
-      Swal.fire("Success", "OTP has been resent to your email.", "success");
+      const response = await resendEmailOtp(email);
+      // Update the verification ID with the new one from resend
+      onVerificationIdUpdate(response.data.verificationId);
+      setTimer(120);
+      setCanResend(false);
+      Swal.fire("Success", "New OTP has been sent to your email.", "success");
     } catch (error) {
-      Swal.fire("Error", "Failed to resend OTP. Please try again.", "error");
+      Swal.fire("Error", error.message || "Failed to resend OTP. Please try again.", "error");
     } finally {
       setIsResending(false);
     }
@@ -585,6 +588,7 @@ export default function Signup() {
           email={formData.email}
           onClose={() => setShowModal(false)}
           onVerify={handleEmailVerified}
+          onVerificationIdUpdate={setVerificationId}
         />
       )}
     </div>

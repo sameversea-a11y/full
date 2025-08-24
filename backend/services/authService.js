@@ -218,6 +218,54 @@ class AuthService {
     return { verificationId, email };
   }
 
+  // Resend OTP for existing unverified users
+  async resendOtp(email) {
+    // Check if user exists and is not verified
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      throw new Error('No account found with this email address');
+    }
+
+    if (existingUser.isEmailVerified) {
+      throw new Error('Email is already verified');
+    }
+
+    // Delete any existing verification records for this email
+    await EmailVerification.deleteMany({ email });
+
+    // Generate new verification ID
+    const verificationId = crypto.randomBytes(16).toString('hex');
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+    // Set expiration time for OTP (e.g., 15 minutes)
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    // Save new OTP
+    await EmailVerification.create({
+      email,
+      otp,
+      verificationId,
+      expiresAt,
+    });
+
+    // Send OTP to email
+    /* await sendEmail({
+      to: email,
+      subject: 'Resend Email Verification - UDIN',
+      html: `
+        <h2>Email Verification</h2>
+        <p>Hello,</p>
+        <p>Here is your new OTP to verify your email address:</p>
+        <p><strong>${otp}</strong></p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    }); */
+
+    return { verificationId, email };
+  }
+
   // Get user profile
   async getUserProfile(userId) {
     const user = await User.findById(userId);

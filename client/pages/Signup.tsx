@@ -48,9 +48,18 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) =>
       return;
     }
 
+    if (!verificationId) {
+      Swal.fire("Error", "Verification ID is missing. Please try again.", "error");
+      return;
+    }
+
+    console.log("Verifying OTP with:", { verificationId, otp: otpString });
+
     setIsVerifying(true);
     try {
       const response = await verifyEmailOtp(verificationId, otpString);
+
+      console.log("OTP verification response:", response);
 
       // Save JWT token and user data for authenticated API calls
       if (response.token) {
@@ -64,6 +73,7 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) =>
       Swal.fire("Success", "Email verified successfully! You are now logged in.", "success");
       onClose();
     } catch (error) {
+      console.error("OTP verification error:", error);
       Swal.fire("Error", error.message || "Invalid OTP", "error");
     } finally {
       setIsVerifying(false);
@@ -335,10 +345,17 @@ export default function Signup() {
         }
       });
 
+      console.log("Account creation response:", response);
+
+      if (!response.data || !response.data.verificationId) {
+        throw new Error("No verification ID received from server");
+      }
+
       setVerificationId(response.data.verificationId);
       setShowModal(true);
       Swal.fire("Account Created!", "OTP sent to your email address for verification", "success");
     } catch (error) {
+      console.error("Account creation error:", error);
       Swal.fire("Error", error.message || "Failed to create account. Please try again.", "error");
     }
   };
@@ -565,6 +582,7 @@ export default function Signup() {
       {showModal && (
         <EmailVerificationModal
           verificationId={verificationId}
+          email={formData.email}
           onClose={() => setShowModal(false)}
           onVerify={handleEmailVerified}
         />

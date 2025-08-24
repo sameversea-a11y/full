@@ -1,6 +1,6 @@
 // controllers/paymentController.js
-const { validationResult } = require('express-validator');
-const paymentService = require('../services/paymentService');
+const { validationResult } = require("express-validator");
+const paymentService = require("../services/paymentService");
 
 class PaymentController {
   /* -----------------------------------------------------------------------
@@ -13,23 +13,26 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
 
-      const orderData = await paymentService.createCartOrder("68aa048c72b1d4e17784e1b7", req.body);
+      const orderData = await paymentService.createCartOrder(
+        req.user.id,
+        req.body,
+      );
 
       return res.status(201).json({
         success: true,
-        message: 'Payment order created successfully',
+        message: "Payment order created successfully",
         data: orderData, // { orderId, amount(paise), currency, razorpayKeyId }
       });
     } catch (error) {
-      console.error('Create cart order error:', error);
+      console.error("Create cart order error:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || 'Failed to create payment order',
+        message: error.message || "Failed to create payment order",
       });
     }
   }
@@ -45,7 +48,7 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
@@ -54,19 +57,19 @@ class PaymentController {
       const orderData = await paymentService.createPaymentOrder(
         req.user.id,
         documentId,
-        amount
+        amount,
       );
 
       return res.status(201).json({
         success: true,
-        message: 'Payment order created successfully',
+        message: "Payment order created successfully",
         data: orderData,
       });
     } catch (error) {
-      console.error('Create document order error:', error);
+      console.error("Create document order error:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || 'Failed to create payment order',
+        message: error.message || "Failed to create payment order",
       });
     }
   }
@@ -81,32 +84,32 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
 
       const metadata = {
-        userAgent: req.get('User-Agent'),
+        userAgent: req.get("User-Agent"),
         ipAddress: req.ip,
       };
 
       const paymentData = await paymentService.verifyPayment(
         req.user.id,
         req.body,
-        metadata
+        metadata,
       );
 
       return res.status(200).json({
         success: true,
-        message: 'Payment verified successfully',
+        message: "Payment verified successfully",
         data: paymentData, // { paymentId, amount, status, paymentDate }
       });
     } catch (error) {
-      console.error('Payment verification error:', error);
+      console.error("Payment verification error:", error);
       return res.status(400).json({
         success: false,
-        message: error.message || 'Payment verification failed',
+        message: error.message || "Payment verification failed",
       });
     }
   }
@@ -122,22 +125,25 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
 
-      const result = await paymentService.createTransaction(req.user.id, req.body);
+      const result = await paymentService.createTransaction(
+        req.user.id,
+        req.body,
+      );
       return res.status(201).json({
         success: true,
-        message: 'Transaction created',
+        message: "Transaction created",
         data: result, // { transactionId, id }
       });
     } catch (error) {
-      console.error('Create transaction error:', error);
+      console.error("Create transaction error:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || 'Failed to create transaction',
+        message: error.message || "Failed to create transaction",
       });
     }
   }
@@ -149,7 +155,7 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
@@ -158,19 +164,19 @@ class PaymentController {
       const result = await paymentService.updateTransactionStatus(
         req.user.id,
         transactionId,
-        req.body // { status, uploadedFilesCount, paymentId, error, extra }
+        req.body, // { status, uploadedFilesCount, paymentId, error, extra }
       );
 
       return res.status(200).json({
         success: true,
-        message: 'Transaction updated',
+        message: "Transaction updated",
         data: result, // { transactionId, status, metadata }
       });
     } catch (error) {
-      console.error('Update transaction status error:', error);
+      console.error("Update transaction status error:", error);
       return res.status(400).json({
         success: false,
-        message: error.message || 'Failed to update transaction',
+        message: error.message || "Failed to update transaction",
       });
     }
   }
@@ -182,16 +188,19 @@ class PaymentController {
   // GET /payments/history
   async getPaymentHistory(req, res) {
     try {
-      const paymentsData = await paymentService.getPaymentHistory(req.user.id, req.query);
+      const paymentsData = await paymentService.getPaymentHistory(
+        req.user.id,
+        req.query,
+      );
       return res.status(200).json({
         success: true,
         data: paymentsData,
       });
     } catch (error) {
-      console.error('Get payment history error:', error);
+      console.error("Get payment history error:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || 'Failed to fetch payment history',
+        message: error.message || "Failed to fetch payment history",
       });
     }
   }
@@ -205,10 +214,10 @@ class PaymentController {
         data: paymentsData,
       });
     } catch (error) {
-      console.error('Get all payments error:', error);
+      console.error("Get all payments error:", error);
       return res.status(500).json({
         success: false,
-        message: error.message || 'Failed to fetch payments',
+        message: error.message || "Failed to fetch payments",
       });
     }
   }
@@ -223,7 +232,7 @@ class PaymentController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
@@ -231,17 +240,21 @@ class PaymentController {
       const { paymentId } = req.params;
       const { amount, reason } = req.body;
 
-      const result = await paymentService.processRefund(paymentId, amount, reason);
+      const result = await paymentService.processRefund(
+        paymentId,
+        amount,
+        reason,
+      );
       return res.status(200).json({
         success: true,
-        message: 'Refund processed',
+        message: "Refund processed",
         data: result, // { refundId, amount, status }
       });
     } catch (error) {
-      console.error('Process refund error:', error);
+      console.error("Process refund error:", error);
       return res.status(400).json({
         success: false,
-        message: error.message || 'Failed to process refund',
+        message: error.message || "Failed to process refund",
       });
     }
   }

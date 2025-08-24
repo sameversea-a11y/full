@@ -1,5 +1,5 @@
-const { validationResult } = require('express-validator');
-const authService = require('../services/authService');
+const { validationResult } = require("express-validator");
+const authService = require("../services/authService");
 
 class AuthController {
   // Register user
@@ -10,8 +10,8 @@ class AuthController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
-          errors: errors.array()
+          message: "Validation failed",
+          errors: errors.array(),
         });
       }
 
@@ -20,15 +20,15 @@ class AuthController {
 
       res.status(201).json({
         success: true,
-        message: 'User registered successfully. Please check your email for verification.',
-        data: userData
+        message:
+          "User registered successfully. Please check your email for verification.",
+        data: userData,
       });
-
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Registration failed'
+        message: error.message || "Registration failed",
       });
     }
   }
@@ -40,8 +40,8 @@ class AuthController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
-          errors: errors.array()
+          message: "Validation failed",
+          errors: errors.array(),
         });
       }
 
@@ -50,15 +50,14 @@ class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'Login successful',
-        ...loginData
+        message: "Login successful",
+        ...loginData,
       });
-
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       res.status(401).json({
         success: false,
-        message: error.message || 'Login failed'
+        message: error.message || "Login failed",
       });
     }
   }
@@ -71,8 +70,8 @@ class AuthController {
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
-          errors: errors.array()
+          message: "Validation failed",
+          errors: errors.array(),
         });
       }
 
@@ -83,15 +82,14 @@ class AuthController {
 
       res.status(200).json({
         success: true,
-        message: 'OTP sent to your email for verification.',
-        data: { verificationId: result.verificationId, email: result.email }
+        message: "OTP sent to your email for verification.",
+        data: { verificationId: result.verificationId, email: result.email },
       });
-
     } catch (error) {
-      console.error('Send OTP error:', error);
+      console.error("Send OTP error:", error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Failed to send OTP'
+        message: error.message || "Failed to send OTP",
       });
     }
   }
@@ -99,21 +97,73 @@ class AuthController {
   // Verify email using OTP
   async verifyEmail(req, res) {
     try {
-      const { email, otp } = req.body;
+      const { verificationId, otp } = req.body;
+
+      console.log("Verification request received:", {
+        verificationId,
+        otp,
+        body: req.body,
+      });
+
+      if (!verificationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Verification ID is required",
+        });
+      }
+
+      if (!otp) {
+        return res.status(400).json({
+          success: false,
+          message: "OTP is required",
+        });
+      }
 
       // Verify OTP
-      const result = await authService.verifyOtp(email, otp);
+      const result = await authService.verifyOtp(verificationId, otp);
 
       res.status(200).json({
         success: true,
-        message: result.message
+        message: result.message,
+        token: result.token,
+        user: result.user,
       });
-
     } catch (error) {
-      console.error('Email verification error:', error);
+      console.error("Email verification error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || 'Email verification failed'
+        message: error.message || "Email verification failed",
+      });
+    }
+  }
+
+  // Resend OTP for existing unverified users
+  async resendOtp(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: errors.array(),
+        });
+      }
+
+      const { email } = req.body;
+
+      // Resend OTP for existing user
+      const result = await authService.resendOtp(email);
+
+      res.status(200).json({
+        success: true,
+        message: "OTP has been resent to your email.",
+        data: { verificationId: result.verificationId, email: result.email },
+      });
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to resend OTP",
       });
     }
   }
@@ -122,16 +172,16 @@ class AuthController {
   async getProfile(req, res) {
     try {
       const userData = await authService.getUserProfile(req.user.id);
-      
+
       res.status(200).json({
         success: true,
-        data: userData
+        data: userData,
       });
     } catch (error) {
-      console.error('Get user error:', error);
+      console.error("Get user error:", error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Failed to get user data'
+        message: error.message || "Failed to get user data",
       });
     }
   }
@@ -140,7 +190,7 @@ class AuthController {
   async logout(req, res) {
     res.status(200).json({
       success: true,
-      message: 'Logged out successfully'
+      message: "Logged out successfully",
     });
   }
 }

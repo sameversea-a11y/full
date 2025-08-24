@@ -27,7 +27,7 @@ const axiosInstance = axios.create({
 // Add request interceptor for auth token if needed
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('userToken');
+    const token = localStorage.getItem("userToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,7 +35,7 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add response interceptor for error handling
@@ -44,15 +44,15 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized access
-      localStorage.removeItem('userToken');
-      window.location.href = '/login';
+      localStorage.removeItem("userToken");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 /**
- * Send OTP to email
+ * Send OTP to email (for new users)
  */
 export async function sendEmailOtp(email: string) {
   try {
@@ -60,6 +60,22 @@ export async function sendEmailOtp(email: string) {
     return response.data;
   } catch (error) {
     throw new Error("Failed to send email OTP");
+  }
+}
+
+/**
+ * Resend OTP to email (for existing unverified users)
+ */
+export async function resendEmailOtp(email: string) {
+  try {
+    const response = await axiosInstance.post("/api/auth/resend-otp", {
+      email,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to resend email OTP",
+    );
   }
 }
 
@@ -78,15 +94,15 @@ export async function sendPhoneOtp(phone: string) {
 /**
  * Verify email OTP
  */
-export async function verifyEmailOtp(email: string, otp: string) {
+export async function verifyEmailOtp(verificationId: string, otp: string) {
   try {
     const response = await axiosInstance.post("/api/auth/verify-email", {
-      email,
+      verificationId,
       otp,
     });
     return response.data;
-  } catch (error) {
-    throw new Error("Invalid email OTP");
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Invalid email OTP");
   }
 }
 
@@ -108,18 +124,32 @@ export async function verifyPhoneOtp(phone: string, otp: string) {
 /**
  * Create new account
  */
-export async function createAccount(formData: SignupForm) {
+export async function createAccount(userData: {
+  name: string;
+  email: string;
+  mobile: string;
+  address?: {
+    street?: string;
+    state?: string;
+    pinCode?: string;
+  };
+}) {
   try {
-    const response = await axiosInstance.post("/api/auth/register", formData);
+    const response = await axiosInstance.post("/api/auth/register", userData);
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to create account");
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to create account",
+    );
   }
 }
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await axiosInstance.post('/api/auth/login', { email, password });
+    const response = await axiosInstance.post("/api/auth/login", {
+      email,
+      password,
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Failed to log in");
@@ -129,7 +159,9 @@ export const loginUser = async (email, password) => {
 // API Call for Forgot Password (send reset email)
 export const forgotPassword = async (email) => {
   try {
-    const response = await axiosInstance.post('/api/auth/forgot-password', { email });
+    const response = await axiosInstance.post("/api/auth/forgot-password", {
+      email,
+    });
     return response.data;
   } catch (error) {
     throw new Error(
@@ -169,8 +201,7 @@ export const uploadFilesToServer = async (
               fileItem.name || `upload-${index}`,
               {
                 type:
-                  (fileItem.file as any)?.type ||
-                  "application/octet-stream",
+                  (fileItem.file as any)?.type || "application/octet-stream",
               },
             );
 
@@ -197,9 +228,7 @@ export const uploadFilesToServer = async (
       }
       // Pass through any extra keys (optional)
       Object.entries(fileItem).forEach(([k, v]) => {
-        if (
-          ["id", "name", "file", "documentTypeId", "tier"].includes(k)
-        ) {
+        if (["id", "name", "file", "documentTypeId", "tier"].includes(k)) {
           return;
         }
         if (v == null) return;
@@ -261,12 +290,12 @@ export const getFilesFromIndexedDB = async (): Promise<
     const request = indexedDB.open(DB_NAME, 1);
 
     request.onerror = () => reject(request.error);
-    
+
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        objectStore.createIndex("timestamp", "timestamp", { unique: false });
       }
     };
 
@@ -362,7 +391,10 @@ export const createPaymentOrder = async (orderData: {
   notes?: any;
 }) => {
   try {
-    const response = await axiosInstance.post('/api/payments/create-order', orderData);
+    const response = await axiosInstance.post(
+      "/api/payments/create-order",
+      orderData,
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -378,12 +410,13 @@ export const verifyPayment = async (paymentData: {
   signature: string;
 }) => {
   try {
-    const response = await axiosInstance.post('/api/payments/verify', paymentData);
+    const response = await axiosInstance.post(
+      "/api/payments/verify",
+      paymentData,
+    );
     return response.data;
   } catch (error: any) {
-    throw new Error(
-      error.response?.data?.error || "Failed to verify payment",
-    );
+    throw new Error(error.response?.data?.error || "Failed to verify payment");
   }
 };
 
@@ -402,7 +435,10 @@ export const getUserProfile = async (userId: string) => {
 // Update user profile
 export const updateUserProfile = async (userId: string, profileData: any) => {
   try {
-    const response = await axiosInstance.put(`/api/users/profile/${userId}`, profileData);
+    const response = await axiosInstance.put(
+      `/api/users/profile/${userId}`,
+      profileData,
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -416,14 +452,16 @@ export const getUserTransactions = async (userId: string, filters?: any) => {
   try {
     const params = new URLSearchParams();
     if (filters) {
-      Object.keys(filters).forEach(key => {
-        if (filters[key] && filters[key] !== 'all') {
+      Object.keys(filters).forEach((key) => {
+        if (filters[key] && filters[key] !== "all") {
           params.append(key, filters[key]);
         }
       });
     }
-    
-    const response = await axiosInstance.get(`/api/users/transactions/${userId}?${params}`);
+
+    const response = await axiosInstance.get(
+      `/api/users/transactions/${userId}?${params}`,
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -437,14 +475,16 @@ export const getUserDocuments = async (userId: string, filters?: any) => {
   try {
     const params = new URLSearchParams();
     if (filters) {
-      Object.keys(filters).forEach(key => {
-        if (filters[key] && filters[key] !== 'all') {
+      Object.keys(filters).forEach((key) => {
+        if (filters[key] && filters[key] !== "all") {
           params.append(key, filters[key]);
         }
       });
     }
-    
-    const response = await axiosInstance.get(`/api/users/documents/${userId}?${params}`);
+
+    const response = await axiosInstance.get(
+      `/api/users/documents/${userId}?${params}`,
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -454,19 +494,25 @@ export const getUserDocuments = async (userId: string, filters?: any) => {
 };
 
 // Download document
-export const downloadDocument = async (documentId: string, type: 'original' | 'signed' = 'original') => {
+export const downloadDocument = async (
+  documentId: string,
+  type: "original" | "signed" = "original",
+) => {
   try {
-    const response = await axiosInstance.get(`/api/documents/download/${documentId}?type=${type}`, {
-      responseType: 'blob',
-    });
-    
+    const response = await axiosInstance.get(
+      `/api/documents/download/${documentId}?type=${type}`,
+      {
+        responseType: "blob",
+      },
+    );
+
     // Create download link
     const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    
+
     // Get filename from response headers or use default
-    const contentDisposition = response.headers['content-disposition'];
+    const contentDisposition = response.headers["content-disposition"];
     let filename = `document_${documentId}.pdf`;
     if (contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="(.+)"/);
@@ -474,13 +520,13 @@ export const downloadDocument = async (documentId: string, type: 'original' | 's
         filename = filenameMatch[1];
       }
     }
-    
-    link.setAttribute('download', filename);
+
+    link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
-    
+
     return { success: true, filename };
   } catch (error: any) {
     throw new Error(

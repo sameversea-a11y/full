@@ -1,6 +1,4 @@
-import "./global.css";
 import React from "react";
-import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -60,11 +58,4 @@ function App() {
   );
 }
 
-// Safer root creation with error handling
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
-} else {
-  console.error("Could not find root element");
-}
+export default App;

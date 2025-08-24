@@ -42,7 +42,7 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) =>
   }, [timer]);
 
   const handleVerifyOtp = async () => {
-    const otpString = otp.join(""); 
+    const otpString = otp.join("");
     if (otpString.length !== 6) {
       Swal.fire("Error", "Please enter a valid 6-digit OTP", "error");
       return;
@@ -50,10 +50,19 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify }) =>
 
     setIsVerifying(true);
     try {
-      await verifyEmailOtp(verificationId, otpString);
-      onVerify(); 
-      Swal.fire("Success", "Email verified successfully!", "success");
-      onClose(); 
+      const response = await verifyEmailOtp(verificationId, otpString);
+
+      // Save JWT token and user data for authenticated API calls
+      if (response.token) {
+        localStorage.setItem('userToken', response.token);
+      }
+      if (response.user) {
+        localStorage.setItem('userData', JSON.stringify(response.user));
+      }
+
+      onVerify(response.user);
+      Swal.fire("Success", "Email verified successfully! You are now logged in.", "success");
+      onClose();
     } catch (error) {
       Swal.fire("Error", error.message || "Invalid OTP", "error");
     } finally {

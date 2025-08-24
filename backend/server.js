@@ -9,6 +9,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const documentRoutes = require('./routes/documents');
 const paymentRoutes = require('./routes/payments');
+const uploadRoutes = require('./routes/uploads');
 const backofficeRoutes = require('./routes/backoffice');
 
 const app = express();

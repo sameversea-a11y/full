@@ -78,15 +78,15 @@ export async function sendPhoneOtp(phone: string) {
 /**
  * Verify email OTP
  */
-export async function verifyEmailOtp(email: string, otp: string) {
+export async function verifyEmailOtp(verificationId: string, otp: string) {
   try {
     const response = await axiosInstance.post("/api/auth/verify-email", {
-      email,
+      verificationId,
       otp,
     });
     return response.data;
-  } catch (error) {
-    throw new Error("Invalid email OTP");
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Invalid email OTP");
   }
 }
 

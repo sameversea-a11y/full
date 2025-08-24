@@ -38,6 +38,15 @@ const documentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  documentTypeId: {
+    type: String,
+    default: ''
+  },
+  tier: {
+    type: String,
+    enum: ['Standard', 'Premium', 'Express'],
+    default: 'Standard'
+  },
   status: {
     type: String,
     enum: ['uploaded', 'processing', 'verified', 'rejected'],

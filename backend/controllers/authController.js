@@ -99,14 +99,16 @@ class AuthController {
   // Verify email using OTP
   async verifyEmail(req, res) {
     try {
-      const { email, otp } = req.body;
+      const { verificationId, otp } = req.body;
 
       // Verify OTP
-      const result = await authService.verifyOtp(email, otp);
+      const result = await authService.verifyOtp(verificationId, otp);
 
       res.status(200).json({
         success: true,
-        message: result.message
+        message: result.message,
+        token: result.token,
+        user: result.user
       });
 
     } catch (error) {

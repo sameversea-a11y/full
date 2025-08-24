@@ -133,19 +133,36 @@ class AuthService {
       throw new Error('Invalid OTP');
     }
 
- /*    // Mark email as verified for the user
+    // Mark email as verified for the user
     const user = await User.findOne({ email: verificationRecord.email });
     if (!user) {
       throw new Error('User not found');
     }
 
     user.isEmailVerified = true;
-    await user.save(); */
+    user.lastLogin = new Date();
+    await user.save();
 
     // Delete OTP record after successful verification
     await EmailVerification.deleteOne({ verificationId });
 
-    return { message: 'Email verified successfully' };
+    // Generate JWT token for auto-login
+    const token = this.generateToken(user._id);
+
+    return {
+      message: 'Email verified successfully',
+      token,
+      user: {
+        id: user._id,
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        lastLogin: user.lastLogin
+      }
+    };
   }
 
 

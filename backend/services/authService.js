@@ -41,7 +41,7 @@ class AuthService {
       password: hashedTempPassword, // Store the hashed temporary password
       address,
       userId,
-      isEmailVerified: true, // Email verification will be needed
+      isEmailVerified: false, // Email verification will be needed
     });
 
     // Generate unique verification ID for OTP
@@ -176,8 +176,7 @@ class AuthService {
       }
     };
   }
-
-
+  
    async sendOtp(email) {
     // Check if user already exists with this email
     const existingUser = await User.findOne({ email });

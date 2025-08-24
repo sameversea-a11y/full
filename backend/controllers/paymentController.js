@@ -18,7 +18,7 @@ class PaymentController {
         });
       }
 
-      const orderData = await paymentService.createCartOrder("68aa048c72b1d4e17784e1b7", req.body);
+      const orderData = await paymentService.createCartOrder(req.user.id, req.body);
 
       return res.status(201).json({
         success: true,

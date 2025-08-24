@@ -269,6 +269,7 @@ export default function Signup() {
 
   const [emailOtp, setEmailOtp] = useState("");
   const [emailVerified, setEmailVerified] = useState(false);
+  const [verifiedUser, setVerifiedUser] = useState(null);
   const [verificationId, setVerificationId] = useState(null);
   const [showModal, setShowModal] = useState(false); // Controls the visibility of the modal
 
@@ -291,26 +292,30 @@ export default function Signup() {
     }
 
     try {
-      const accountData = await createAccount({
-        name: formData.firstName + " " + formData.lastName, 
-        email: formData.email,
-        mobile: formData.phone, 
-      });
-      const { userId, tempPassword } = accountData;
+      // User is already created and logged in after email verification
+      // Just store additional form data and proceed
+      const completeUserData = {
+        ...formData,
+        ...verifiedUser,
+        address: {
+          street: formData.address,
+          state: formData.state,
+          pinCode: formData.pin
+        }
+      };
 
-      // Store user data
-      localStorage.setItem("udin_user_data", JSON.stringify({ ...formData, userId, tempPassword }));
+      localStorage.setItem("udin_user_data", JSON.stringify(completeUserData));
 
       Swal.fire(
-        "Account Created!",
-        `User ID: ${userId}, Temporary Password: ${tempPassword}`,
+        "Account Ready!",
+        "Your account is verified and ready to use. Proceeding to upload documents.",
         "success"
       );
 
-      // Redirect to payment screen
-      navigate("/payment");
+      // Redirect to upload screen (where they can upload files before payment)
+      navigate("/");
     } catch (error) {
-      Swal.fire("Error", "Failed to create account. Please try again.", "error");
+      Swal.fire("Error", "Failed to complete account setup. Please try again.", "error");
     }
   };
 
@@ -325,8 +330,9 @@ export default function Signup() {
     }
   };
 
-  const handleEmailVerified = () => {
-    setEmailVerified(true); 
+  const handleEmailVerified = (userData) => {
+    setEmailVerified(true);
+    setVerifiedUser(userData);
   };
 
   return (

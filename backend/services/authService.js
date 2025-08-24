@@ -1,20 +1,20 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs'); // Import bcrypt
-const EmailVerification = require('../models/EmailVerification');
-const { sendEmail } = require('../utils/email');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs"); // Import bcrypt
+const EmailVerification = require("../models/EmailVerification");
+const { sendEmail } = require("../utils/email");
 
 class AuthService {
   // Generate JWT token
   generateToken(id) {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE || '7d'
+      expiresIn: process.env.JWT_EXPIRE || "7d",
     });
   }
 
   // Register new user
- async registerUser(userData) {
+  async registerUser(userData) {
     const { name, email, mobile, password, address } = userData;
 
     // Check if user already exists
@@ -23,15 +23,15 @@ class AuthService {
     });
 
     if (existingUser) {
-      throw new Error('User already exists with this email or mobile number');
+      throw new Error("User already exists with this email or mobile number");
     }
 
     // Generate user ID
     const userId = await User.generateUserId();
 
     // Generate temporary password
-    const tempPassword = crypto.randomBytes(8).toString('hex'); // Temporary 8-character password
-    const hashedTempPassword = await bcrypt.hash(tempPassword, 12);// Hash the temporary password
+    const tempPassword = crypto.randomBytes(8).toString("hex"); // Temporary 8-character password
+    const hashedTempPassword = await bcrypt.hash(tempPassword, 12); // Hash the temporary password
 
     // Create user with the temporary password (password will be reset after the first login)
     const user = await User.create({
@@ -45,7 +45,7 @@ class AuthService {
     });
 
     // Generate unique verification ID for OTP
-    const verificationId = crypto.randomBytes(16).toString('hex');
+    const verificationId = crypto.randomBytes(16).toString("hex");
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -82,28 +82,28 @@ class AuthService {
       mobile: user.mobile,
       isEmailVerified: user.isEmailVerified,
       verificationId, // Return verification ID for OTP verification
-      tempPassword // Return temp password for frontend display
+      tempPassword, // Return temp password for frontend display
     };
   }
 
   // Login user
   async loginUser(email, password) {
     // Find user and include password
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     if (!user.isActive) {
-      throw new Error('Account is deactivated');
+      throw new Error("Account is deactivated");
     }
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     // Update last login
@@ -123,8 +123,8 @@ class AuthService {
         mobile: user.mobile,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        lastLogin: user.lastLogin
-      }
+        lastLogin: user.lastLogin,
+      },
     };
   }
 
@@ -137,18 +137,18 @@ class AuthService {
     });
 
     if (!verificationRecord) {
-      throw new Error('Invalid or expired OTP');
+      throw new Error("Invalid or expired OTP");
     }
     console.log(verificationRecord);
     // Check if the OTP matches
     if (verificationRecord.otp !== otp) {
-      throw new Error('Invalid OTP');
+      throw new Error("Invalid OTP");
     }
 
     // Mark email as verified for the user
     const user = await User.findOne({ email: verificationRecord.email });
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     user.isEmailVerified = true;
@@ -162,7 +162,7 @@ class AuthService {
     const token = this.generateToken(user._id);
 
     return {
-      message: 'Email verified successfully',
+      message: "Email verified successfully",
       token,
       user: {
         id: user._id,
@@ -172,20 +172,20 @@ class AuthService {
         mobile: user.mobile,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        lastLogin: user.lastLogin
-      }
+        lastLogin: user.lastLogin,
+      },
     };
   }
-  
-   async sendOtp(email) {
+
+  async sendOtp(email) {
     // Check if user already exists with this email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new Error('User already exists with this email');
+      throw new Error("User already exists with this email");
     }
 
     // Generate unique verification ID
-    const verificationId = crypto.randomBytes(16).toString('hex');
+    const verificationId = crypto.randomBytes(16).toString("hex");
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -222,18 +222,18 @@ class AuthService {
     // Check if user exists and is not verified
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      throw new Error('No account found with this email address');
+      throw new Error("No account found with this email address");
     }
 
     if (existingUser.isEmailVerified) {
-      throw new Error('Email is already verified');
+      throw new Error("Email is already verified");
     }
 
     // Delete any existing verification records for this email
     await EmailVerification.deleteMany({ email });
 
     // Generate new verification ID
-    const verificationId = crypto.randomBytes(16).toString('hex');
+    const verificationId = crypto.randomBytes(16).toString("hex");
 
     // Generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -268,9 +268,9 @@ class AuthService {
   // Get user profile
   async getUserProfile(userId) {
     const user = await User.findById(userId);
-    
+
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     return {
@@ -283,7 +283,7 @@ class AuthService {
       role: user.role,
       isEmailVerified: user.isEmailVerified,
       lastLogin: user.lastLogin,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     };
   }
 }

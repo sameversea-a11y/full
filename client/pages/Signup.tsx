@@ -13,7 +13,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, ArrowLeft, Mail, Shield, Clock, RefreshCw } from "lucide-react";
+import {
+  UserPlus,
+  ArrowLeft,
+  Mail,
+  Shield,
+  Clock,
+  RefreshCw,
+} from "lucide-react";
 
 // API calls
 import {
@@ -23,10 +30,16 @@ import {
   verifyEmailOtp,
 } from "@/api/api";
 
-const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVerificationIdUpdate }) => {
-  const [otp, setOtp] = useState(Array(6).fill("")); 
-  const [timer, setTimer] = useState(120); 
-  const [canResend, setCanResend] = useState(false); 
+const EmailVerificationModal = ({
+  verificationId,
+  email,
+  onClose,
+  onVerify,
+  onVerificationIdUpdate,
+}) => {
+  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [timer, setTimer] = useState(120);
+  const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
@@ -35,10 +48,10 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
       setCanResend(true);
     } else {
       const interval = setInterval(() => {
-        setTimer((prevTime) => prevTime - 1); 
+        setTimer((prevTime) => prevTime - 1);
       }, 1000);
 
-      return () => clearInterval(interval); 
+      return () => clearInterval(interval);
     }
   }, [timer]);
 
@@ -50,7 +63,11 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
     }
 
     if (!verificationId) {
-      Swal.fire("Error", "Verification ID is missing. Please try again.", "error");
+      Swal.fire(
+        "Error",
+        "Verification ID is missing. Please try again.",
+        "error",
+      );
       return;
     }
 
@@ -64,14 +81,18 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
 
       // Save JWT token and user data for authenticated API calls
       if (response.token) {
-        localStorage.setItem('userToken', response.token);
+        localStorage.setItem("userToken", response.token);
       }
       if (response.user) {
-        localStorage.setItem('userData', JSON.stringify(response.user));
+        localStorage.setItem("userData", JSON.stringify(response.user));
       }
 
       onVerify(response.user);
-      Swal.fire("Success", "Email verified successfully! You are now logged in.", "success");
+      Swal.fire(
+        "Success",
+        "Email verified successfully! You are now logged in.",
+        "success",
+      );
       onClose();
     } catch (error) {
       console.error("OTP verification error:", error);
@@ -91,19 +112,23 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
       setCanResend(false);
       Swal.fire("Success", "New OTP has been sent to your email.", "success");
     } catch (error) {
-      Swal.fire("Error", error.message || "Failed to resend OTP. Please try again.", "error");
+      Swal.fire(
+        "Error",
+        error.message || "Failed to resend OTP. Please try again.",
+        "error",
+      );
     } finally {
       setIsResending(false);
     }
   };
 
   const handleInputChange = (e, index) => {
-    const value = e.target.value.replace(/[^0-9]/g, ''); 
+    const value = e.target.value.replace(/[^0-9]/g, "");
     if (value.length <= 1) {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
-      
+
       if (value !== "" && index < 5) {
         const nextInput = document.getElementById(`otp-${index + 1}`);
         if (nextInput) nextInput.focus();
@@ -112,7 +137,7 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       if (prevInput) prevInput.focus();
     }
@@ -121,7 +146,7 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
   return (
@@ -135,8 +160,8 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
             Verify Your Email
           </h2>
           <p className="text-gray-600 text-sm leading-relaxed">
-            We've sent a 6-digit verification code to your email address. 
-            Please enter it below to continue.
+            We've sent a 6-digit verification code to your email address. Please
+            enter it below to continue.
           </p>
         </div>
 
@@ -156,11 +181,11 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
                   w-12 h-12 text-center text-xl font-semibold
                   border-2 rounded-xl transition-all duration-200
                   focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${digit ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+                  ${digit ? "border-blue-500 bg-blue-50" : "border-gray-300"}
                   hover:border-blue-400
                 `}
                 style={{
-                  caretColor: 'transparent' 
+                  caretColor: "transparent",
                 }}
               />
             ))}
@@ -168,15 +193,16 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
 
           <button
             onClick={handleVerifyOtp}
-            disabled={isVerifying || otp.some(digit => digit === '')}
+            disabled={isVerifying || otp.some((digit) => digit === "")}
             className={`
               w-full py-3 px-6 rounded-xl font-semibold text-white
               transition-all duration-200 transform
-              ${isVerifying || otp.some(digit => digit === '')
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95'
+              ${
+                isVerifying || otp.some((digit) => digit === "")
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95"
               }
-              ${isVerifying ? 'animate-pulse' : ''}
+              ${isVerifying ? "animate-pulse" : ""}
             `}
           >
             {isVerifying ? (
@@ -185,7 +211,7 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
                 Verifying...
               </div>
             ) : (
-              'Verify Email'
+              "Verify Email"
             )}
           </button>
         </div>
@@ -196,16 +222,23 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-600">
                 {timer > 0 ? (
-                  <>Time remaining: <span className="font-mono font-semibold text-blue-600">{formatTime(timer)}</span></>
+                  <>
+                    Time remaining:{" "}
+                    <span className="font-mono font-semibold text-blue-600">
+                      {formatTime(timer)}
+                    </span>
+                  </>
                 ) : (
-                  <span className="text-green-600 font-medium">You can now resend the code</span>
+                  <span className="text-green-600 font-medium">
+                    You can now resend the code
+                  </span>
                 )}
               </span>
             </div>
-            
+
             {timer > 0 && (
               <div className="w-full bg-gray-200 rounded-full h-1 mb-3">
-                <div 
+                <div
                   className="bg-blue-600 h-1 rounded-full transition-all duration-1000 ease-linear"
                   style={{ width: `${((120 - timer) / 120) * 100}%` }}
                 ></div>
@@ -219,11 +252,12 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
             className={`
               w-full py-2.5 px-6 rounded-xl font-medium
               transition-all duration-200 transform
-              ${canResend && !isResending
-                ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105 active:scale-95'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              ${
+                canResend && !isResending
+                  ? "bg-green-600 text-white hover:bg-green-700 hover:scale-105 active:scale-95"
+                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
               }
-              ${isResending ? 'animate-pulse' : ''}
+              ${isResending ? "animate-pulse" : ""}
             `}
           >
             {isResending ? (
@@ -246,8 +280,18 @@ const EmailVerificationModal = ({ verificationId, email, onClose, onVerify, onVe
                      text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full
                      transition-colors duration-200"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -312,8 +356,8 @@ export default function Signup() {
       address: {
         street: formData.address,
         state: formData.state,
-        pinCode: formData.pin
-      }
+        pinCode: formData.pin,
+      },
     };
 
     localStorage.setItem("udin_user_data", JSON.stringify(completeUserData));
@@ -321,7 +365,7 @@ export default function Signup() {
     Swal.fire(
       "Account Ready!",
       "Your account is verified and ready to use. You can now upload documents.",
-      "success"
+      "success",
     );
 
     // Redirect to upload screen (where they can upload files before payment)
@@ -330,8 +374,17 @@ export default function Signup() {
 
   const handleEmailOtp = async () => {
     // Validate required fields before sending OTP
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
-      Swal.fire("Error", "Please fill in all required fields before verifying email", "error");
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.phone
+    ) {
+      Swal.fire(
+        "Error",
+        "Please fill in all required fields before verifying email",
+        "error",
+      );
       return;
     }
 
@@ -344,8 +397,8 @@ export default function Signup() {
         address: {
           street: formData.address,
           state: formData.state,
-          pinCode: formData.pin
-        }
+          pinCode: formData.pin,
+        },
       });
 
       console.log("Account creation response:", response);
@@ -356,10 +409,18 @@ export default function Signup() {
 
       setVerificationId(response.data.verificationId);
       setShowModal(true);
-      Swal.fire("Account Created!", "OTP sent to your email address for verification", "success");
+      Swal.fire(
+        "Account Created!",
+        "OTP sent to your email address for verification",
+        "success",
+      );
     } catch (error) {
       console.error("Account creation error:", error);
-      Swal.fire("Error", error.message || "Failed to create account. Please try again.", "error");
+      Swal.fire(
+        "Error",
+        error.message || "Failed to create account. Please try again.",
+        "error",
+      );
     }
   };
 

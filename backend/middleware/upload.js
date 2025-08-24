@@ -1,29 +1,37 @@
-const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
+const multer = require("multer");
+const path = require("path");
+const crypto = require("crypto");
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/documents/');
+    cb(null, "uploads/documents/");
   },
   filename: function (req, file, cb) {
     // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const hash = crypto.createHash('md5').update(file.originalname + uniqueSuffix).digest('hex');
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const hash = crypto
+      .createHash("md5")
+      .update(file.originalname + uniqueSuffix)
+      .digest("hex");
     cb(null, hash + path.extname(file.originalname));
-  }
+  },
 });
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = process.env.ALLOWED_FILE_TYPES.split(',');
+  const allowedTypes = process.env.ALLOWED_FILE_TYPES.split(",");
   const fileExtension = path.extname(file.originalname).toLowerCase().slice(1);
-  
+
   if (allowedTypes.includes(fileExtension)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type ${fileExtension} is not allowed. Allowed types: ${allowedTypes.join(', ')}`), false);
+    cb(
+      new Error(
+        `File type ${fileExtension} is not allowed. Allowed types: ${allowedTypes.join(", ")}`,
+      ),
+      false,
+    );
   }
 };
 
@@ -31,37 +39,37 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800 // 50MB default
+    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 52428800, // 50MB default
   },
-  fileFilter: fileFilter
+  fileFilter: fileFilter,
 });
 
 // Error handling middleware for multer
 exports.handleUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
+    if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
-        message: 'File size too large. Maximum size is 50MB.'
+        message: "File size too large. Maximum size is 50MB.",
       });
     }
-    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+    if (error.code === "LIMIT_UNEXPECTED_FILE") {
       return res.status(400).json({
         success: false,
-        message: 'Unexpected field name for file upload.'
+        message: "Unexpected field name for file upload.",
       });
     }
   }
-  
-  if (error.message.includes('File type')) {
+
+  if (error.message.includes("File type")) {
     return res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
-  
+
   next(error);
 };
 
-exports.uploadDocument = upload.single('document');
-exports.uploadMultipleFiles = upload.array('files', 30); // Support up to 30 files
+exports.uploadDocument = upload.single("document");
+exports.uploadMultipleFiles = upload.array("files", 30); // Support up to 30 files

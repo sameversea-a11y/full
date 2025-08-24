@@ -1,8 +1,8 @@
 // routes/payment.routes.js
-const express = require('express');
-const { body, param } = require('express-validator');
-const { protect, userOnly /*, adminOnly*/ } = require('../middleware/auth');
-const paymentController = require('../controllers/paymentController');
+const express = require("express");
+const { body, param } = require("express-validator");
+const { protect, userOnly /*, adminOnly*/ } = require("../middleware/auth");
+const paymentController = require("../controllers/paymentController");
 
 const router = express.Router();
 
@@ -12,56 +12,62 @@ const router = express.Router();
 
 // Create cart order (matches frontend)
 router.post(
-  '/create-order',
+  "/create-order",
   protect,
   userOnly,
   [
-    body('amount').isNumeric().withMessage('amount (INR) is required'),
-    body('amount').custom((v) => v > 0).withMessage('amount must be > 0'),
-    body('items').optional().isArray().withMessage('items must be an array'),
-    body('subtotal').optional().isNumeric(),
-    body('tax').optional().isObject(), // { rate, gstAmount }
-    body('notes').optional().isObject(),
+    body("amount").isNumeric().withMessage("amount (INR) is required"),
+    body("amount")
+      .custom((v) => v > 0)
+      .withMessage("amount must be > 0"),
+    body("items").optional().isArray().withMessage("items must be an array"),
+    body("subtotal").optional().isNumeric(),
+    body("tax").optional().isObject(), // { rate, gstAmount }
+    body("notes").optional().isObject(),
   ],
-  paymentController.createCartOrder
+  paymentController.createCartOrder,
 );
 
 // (Optional) legacy single-document order
 router.post(
-  '/order/document',
+  "/order/document",
   protect,
   userOnly,
   [
-    body('documentId').isMongoId().withMessage('Valid document ID is required'),
-    body('amount').isNumeric().withMessage('amount (INR) is required'),
-    body('amount').custom((v) => v > 0).withMessage('amount must be > 0'),
+    body("documentId").isMongoId().withMessage("Valid document ID is required"),
+    body("amount").isNumeric().withMessage("amount (INR) is required"),
+    body("amount")
+      .custom((v) => v > 0)
+      .withMessage("amount must be > 0"),
   ],
-  paymentController.createDocumentOrder
+  paymentController.createDocumentOrder,
 );
 
 // Verify payment (accepts either new or razorpay_* keys)
 router.post(
-  '/verify',
+  "/verify",
   protect,
   userOnly,
   [
     body().custom((body) => {
       const hasNew = body.orderId && body.paymentId && body.signature;
       const hasLegacy =
-        body.razorpay_order_id && body.razorpay_payment_id && body.razorpay_signature;
+        body.razorpay_order_id &&
+        body.razorpay_payment_id &&
+        body.razorpay_signature;
       if (!hasNew && !hasLegacy) {
         throw new Error(
-          'Provide (orderId, paymentId, signature) or (razorpay_order_id, razorpay_payment_id, razorpay_signature)'
+          "Provide (orderId, paymentId, signature) or (razorpay_order_id, razorpay_payment_id, razorpay_signature)",
         );
       }
       return true;
     }),
   ],
-  paymentController.verifyPayment
+  paymentController.verifyPayment,
 );
 
 // Payment history (user)
-router.get('/history', protect, userOnly, paymentController.getPaymentHistory);
+router.get("/history", protect, userOnly, paymentController.getPaymentHistory);
 
 // (Optional) backoffice list
 // router.get('/payments', protect, adminOnly, paymentController.getAllPayments);
@@ -72,38 +78,40 @@ router.get('/history', protect, userOnly, paymentController.getPaymentHistory);
 
 // Create a transaction (pending)
 router.post(
-  '/transactions',
+  "/transactions",
   protect,
   userOnly,
   [
-    body('orderId').isString().withMessage('orderId is required'),
-    body('amount').isNumeric().withMessage('amount (INR) is required'),
-    body('amount').custom((v) => v > 0).withMessage('amount must be > 0'),
-    body('currency').optional().isString(),
-    body('items').optional().isArray(),
-    body('customer').optional().isObject(),
-    body('tax').optional().isObject(),
-    body('subtotal').optional().isNumeric(),
-    body('status').optional().isString(),
-    body('description').optional().isString(),
+    body("orderId").isString().withMessage("orderId is required"),
+    body("amount").isNumeric().withMessage("amount (INR) is required"),
+    body("amount")
+      .custom((v) => v > 0)
+      .withMessage("amount must be > 0"),
+    body("currency").optional().isString(),
+    body("items").optional().isArray(),
+    body("customer").optional().isObject(),
+    body("tax").optional().isObject(),
+    body("subtotal").optional().isNumeric(),
+    body("status").optional().isString(),
+    body("description").optional().isString(),
   ],
-  paymentController.createTransaction
+  paymentController.createTransaction,
 );
 
 // Update transaction status (paid / uploaded / error / cancelled)
 router.patch(
-  '/transactions/:transactionId/status',
+  "/transactions/:transactionId/status",
   protect,
   userOnly,
   [
-    param('transactionId').isString().withMessage('transactionId is required'),
-    body('status').isString().withMessage('status is required'),
-    body('uploadedFilesCount').optional().isNumeric(),
-    body('paymentId').optional().isString(),
-    body('error').optional().isString(),
-    body('extra').optional().isObject(),
+    param("transactionId").isString().withMessage("transactionId is required"),
+    body("status").isString().withMessage("status is required"),
+    body("uploadedFilesCount").optional().isNumeric(),
+    body("paymentId").optional().isString(),
+    body("error").optional().isString(),
+    body("extra").optional().isObject(),
   ],
-  paymentController.updateTransactionStatus
+  paymentController.updateTransactionStatus,
 );
 
 module.exports = router;

@@ -320,13 +320,30 @@ export default function Signup() {
   };
 
   const handleEmailOtp = async () => {
+    // Validate required fields before sending OTP
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+      Swal.fire("Error", "Please fill in all required fields before verifying email", "error");
+      return;
+    }
+
     try {
-      const response = await sendEmailOtp(formData.email);
-      setVerificationId(response.data.verificationId);
-      setShowModal(true); 
-      Swal.fire("OTP Sent", "OTP sent to your email address", "success");
+      // Create account and send OTP in one step
+      const accountData = await createAccount({
+        name: formData.firstName + " " + formData.lastName,
+        email: formData.email,
+        mobile: formData.phone,
+        address: {
+          street: formData.address,
+          state: formData.state,
+          pinCode: formData.pin
+        }
+      });
+
+      setVerificationId(accountData.verificationId || accountData.userId);
+      setShowModal(true);
+      Swal.fire("Account Created!", "OTP sent to your email address for verification", "success");
     } catch (error) {
-      Swal.fire("Error", "Failed to send email OTP. Please try again.", "error");
+      Swal.fire("Error", "Failed to create account. Please try again.", "error");
     }
   };
 

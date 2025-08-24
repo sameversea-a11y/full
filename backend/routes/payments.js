@@ -12,7 +12,7 @@ const router = express.Router();
 
 // Create cart order (matches frontend)
 router.post(
-  '/order',
+  '/create-order',
   [
     body('amount').isNumeric().withMessage('amount (INR) is required'),
     body('amount').custom((v) => v > 0).withMessage('amount must be > 0'),
